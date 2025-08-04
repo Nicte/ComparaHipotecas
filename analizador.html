@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; connect-src 'self'; font-src 'self' https://fonts.gstatic.com;">
+    
+    <title>Analizador de Bonificaciones - ComparaHipotecas</title>
+    <meta name="description" content="Calcula si compensa contratar seguros o domiciliar nómina según el descuento en el tipo de interés y su coste real.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://username.github.io/ComparaHipotecas/analizador.html">
+    <meta property="og:title" content="Analizador de Bonificaciones - ComparaHipotecas">
+    <meta property="og:description" content="Calcula si compensa contratar seguros o domiciliar nómina según el descuento en el tipo de interés y su coste real.">
+    
+    <!-- Favicon and PWA -->
+    <link rel="icon" type="image/svg+xml" href="./img/favicon.svg">
+    <link rel="manifest" href="./site.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1"></script>
+    
+    <!-- Custom Styles (minimal overrides) -->
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 font-sans">
+    <header class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">
+                        <a href="./index.html" class="hover:text-primary-600 transition-colors" aria-label="Volver a la página principal">
+                            ComparaHipotecas
+                        </a>
+                    </h1>
+                </div>
+                <nav aria-label="Navegación principal" class="flex items-center space-x-6">
+                    <a href="./index.html" class="text-gray-600 hover:text-primary-600 font-medium transition-colors text-sm">
+                        ← Volver al inicio
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <!-- Introduction Section -->
+        <section class="bg-gradient-to-br from-slate-50 to-blue-50 py-8 border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="flex items-center justify-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold text-gray-900">Analizador de Bonificaciones</h1>
+                    </div>
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Descubre el momento óptimo para cancelar productos vinculados y cuánto realmente ahorras con las bonificaciones de tu hipoteca.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calculator Section -->
+        <section class="py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Datos de la Hipoteca -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">Datos de tu hipoteca</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Importe de la hipoteca (€)</label>
+                            <input type="number" id="amount" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                                   min="1000" max="2000000" step="1000" value="200000" required>
+                            <small class="text-gray-500 text-xs mt-1">Entre 1.000€ y 2.000.000€</small>
+                        </div>
+                        <div>
+                            <label for="baseRate" class="block text-sm font-medium text-gray-700 mb-2">TIN base (%)</label>
+                            <input type="number" id="baseRate" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                                   min="0.1" max="15" step="0.01" value="3.50" required>
+                            <small class="text-gray-500 text-xs mt-1">Tipo de interés nominal sin bonificaciones</small>
+                        </div>
+                        <div>
+                            <label for="term" class="block text-sm font-medium text-gray-700 mb-2">Plazo (años)</label>
+                            <input type="number" id="term" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition" 
+                                   min="5" max="40" step="1" value="30" required>
+                            <small class="text-gray-500 text-xs mt-1">Entre 5 y 40 años</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bonificaciones Disponibles -->
+                <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4 text-center">Productos vinculados y sus bonificaciones</h2>
+                    <p class="text-amber-800 bg-amber-50 rounded-lg p-4 mb-6 text-sm">
+                        <strong>💡 Consejo:</strong> Introduce las bonificaciones que te ofrece tu banco. Cada banco tiene diferentes porcentajes. 
+                        Por ejemplo: nómina 0.50%, seguros 0.25%-0.30%, tarjetas 0.10%-0.20%, etc.
+                    </p>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr class="border-b-2 border-gray-200">
+                                    <th class="text-left py-3 px-4 font-semibold text-gray-700">Producto</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-gray-700">Activo</th>
+                                    <th class="text-center py-3 px-4 font-semibold text-gray-700">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <span>Bonificación</span>
+                                            <span class="text-xs text-gray-500">(%)</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center py-3 px-4 font-semibold text-gray-700">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <span>Coste banco</span>
+                                            <span class="text-xs text-gray-500">(€/año)</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center py-3 px-4 font-semibold text-gray-700">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <span>Coste externo</span>
+                                            <span class="text-xs text-gray-500">(€/año)</span>
+                                        </div>
+                                    </th>
+                                    <th class="text-center py-3 px-4 font-semibold text-gray-700">Sobrecoste</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productosBody">
+                                <!-- Se llenará con JavaScript -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="border-t-2 border-gray-300 bg-gray-50">
+                                    <td class="py-4 px-4 font-semibold text-gray-700">TOTAL ANUAL</td>
+                                    <td></td>
+                                    <td class="text-center py-4 px-4 font-bold text-green-600" id="totalBonificacion">0.00%</td>
+                                    <td class="text-center py-4 px-4 font-bold text-gray-900" id="totalBanco">0€</td>
+                                    <td class="text-center py-4 px-4 font-bold text-gray-900" id="totalExterno">0€</td>
+                                    <td class="text-center py-4 px-4 font-bold" id="totalDiferencia">0€</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Botón de Cálculo -->
+                <div class="text-center mb-8">
+                    <button id="calculateBtn" class="bg-gradient-to-r from-primary-600 to-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-primary-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                        <span class="calculate-text">Calcular análisis</span>
+                        <span class="calculate-loading hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Calculando...
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Resultados -->
+                <div id="results" class="hidden">
+                    <!-- Análisis Unificado -->
+                    <div class="bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-2xl p-8 mb-8 border border-gray-100">
+                        <div class="text-center mb-8">
+                            <div class="flex items-center justify-center space-x-3 mb-4">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                                    </svg>
+                                </div>
+                                <h2 class="text-3xl font-bold text-gray-900">Análisis de Bonificaciones</h2>
+                            </div>
+                            <div id="recommendationText" class="text-lg text-gray-700 leading-relaxed max-w-4xl mx-auto">
+                                <!-- Se llenará dinámicamente con el análisis principal -->
+                            </div>
+                        </div>
+
+                        <!-- Comparación -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <div class="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-4 text-center">Sin bonificaciones</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">TIN:</span>
+                                        <span id="baseTinResult" class="font-semibold text-gray-900">3.50%</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Cuota mensual:</span>
+                                        <span id="baseMonthlyResult" class="font-semibold text-gray-900">898€</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Intereses totales:</span>
+                                        <span id="baseTotalInterestResult" class="font-semibold text-gray-900">123.280€</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-gradient-to-br from-primary-50 to-blue-50 rounded-2xl shadow-lg p-6 border border-primary-200">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-4 text-center">Con bonificaciones</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">TIN final:</span>
+                                        <span id="finalTinResult" class="font-semibold text-primary-700">3.30%</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Cuota mensual:</span>
+                                        <span id="finalMonthlyResult" class="font-semibold text-primary-700">877€</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Intereses totales:</span>
+                                        <span id="finalTotalInterestResult" class="font-semibold text-primary-700">115.720€</span>
+                                    </div>
+                                    <div class="flex justify-between items-center pt-2 border-t border-primary-200">
+                                        <span class="text-gray-600 font-medium">Ahorro en intereses:</span>
+                                        <span id="savingsResult" class="font-bold text-green-600 text-lg">7.560€</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Análisis temporal -->
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+                        <!-- Tabla de evolución anual -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4 text-center">Evolución año a año</h3>
+                            <p class="text-gray-600 text-center mb-6 text-sm">
+                                Análisis detallado de cómo evoluciona el balance durante los primeros años.
+                            </p>
+                            <div id="yearlyTable" class="overflow-x-auto">
+                                <!-- Se llenará dinámicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Gráfico -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4 text-center">Análisis temporal</h3>
+                            <p class="text-gray-600 text-center mb-6 text-sm">
+                                Verde = rentable, Rojo = no rentable. La línea azul muestra el ahorro acumulado.
+                            </p>
+                            <div class="h-80">
+                                <canvas id="savingsChart" class="w-full h-full"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <section class="bg-amber-50 border-t border-amber-200 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <p class="text-amber-800 text-sm">
+                        <strong>Aviso:</strong> Los cálculos son estimativos y no tienen en cuenta posibles cambios en el tipo de interés variable, comisiones adicionales o cambios en las condiciones. Esta herramienta es orientativa y no sustituye el asesoramiento financiero profesional.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600 text-sm">
+                    Hecha con 
+                    <span class="text-red-500">❤️</span> 
+                    por 
+                    <a href="https://github.com/Nicte" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                       aria-label="Visitar el perfil de Nicte en GitHub (se abre en nueva ventana)">
+                        Nicte
+                    </a>
+                </p>
+                <p class="text-gray-500 text-xs">
+                    Inspirado en 
+                    <a href="https://p2pinv88.github.io/BoniCalc/" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="text-gray-600 hover:text-primary-600 transition-colors underline">
+                        BoniCalc
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./js/main.js" defer></script>
+    <script src="./js/analizador.js" defer></script>
+</body>
+</html> 

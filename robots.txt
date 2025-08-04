@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap location (update with actual GitHub Pages URL when deployed)
+# Sitemap: https://username.github.io/ComparaHipotecas/sitemap.xml 

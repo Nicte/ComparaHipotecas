@@ -1,0 +1,22 @@
+{
+  "name": "ComparaHipotecas - Herramientas para tu hipoteca",
+  "short_name": "ComparaHipotecas",
+  "description": "Comparador de hipotecas, analizador de bonificaciones y cuadro de amortización. Todo explicado de forma clara y sencilla.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "./img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "productivity", "utilities"],
+  "screenshots": []
+}

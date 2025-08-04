@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; connect-src 'self'; font-src 'self' https://fonts.gstatic.com;">
+    
+    <title>ComparaHipotecas — Herramientas para tu hipoteca</title>
+    <meta name="description" content="Comparador de hipotecas, analizador de bonificaciones y cuadro de amortización. Todo explicado de forma clara y sencilla.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://username.github.io/ComparaHipotecas/">
+    <meta property="og:title" content="ComparaHipotecas — Herramientas para tu hipoteca">
+    <meta property="og:description" content="Comparador de hipotecas, analizador de bonificaciones y cuadro de amortización. Todo explicado de forma clara y sencilla.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://username.github.io/ComparaHipotecas/">
+    <meta property="twitter:title" content="ComparaHipotecas — Herramientas para tu hipoteca">
+    <meta property="twitter:description" content="Comparador de hipotecas, analizador de bonificaciones y cuadro de amortización. Todo explicado de forma clara y sencilla.">
+    
+    <!-- Favicon and PWA -->
+    <link rel="icon" type="image/svg+xml" href="./img/favicon.svg">
+    <link rel="manifest" href="./site.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header class="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">ComparaHipotecas</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Introduction Section -->
+        <section class="bg-gradient-to-br from-slate-50 to-blue-50 py-16 border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="flex items-center justify-center space-x-4 mb-8">
+                        <div class="w-14 h-14 bg-gradient-to-br from-primary-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                            </svg>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl font-bold text-gray-900">ComparaHipotecas</h1>
+                    </div>
+                    <p class="text-xl md:text-2xl text-gray-700 font-medium mb-6">
+                        Herramientas sencillas para elegir tu hipoteca con claridad.
+                    </p>
+                    <p class="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
+                        ComparaHipotecas reúne calculadoras y comparadores para ayudarte a entender el coste real de tu hipoteca. 
+                        Sin hojas de cálculo ni complicaciones: información clara para decidir mejor.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tools Section -->
+        <section class="tools">
+            <div class="container">
+                <h2 class="tools-title">Herramientas</h2>
+                <div class="tools-grid">
+                    <article class="tool-card">
+                        <h3 class="tool-title">Comparador de Hipotecas</h3>
+                        <p class="tool-description">
+                            Compara varias ofertas lado a lado: tipo, plazo, TIN/TAE, comisiones y cuota estimada.
+                        </p>
+                        <button class="tool-button" aria-label="Comparador de Hipotecas - Próximamente" disabled>
+                            Próximamente
+                        </button>
+                    </article>
+
+                    <article class="tool-card">
+                        <h3 class="tool-title">Analizador de Bonificaciones</h3>
+                        <p class="tool-description">
+                            Calcula si compensa contratar seguros o domiciliar nómina según el descuento en el tipo de interés y su coste real.
+                        </p>
+                        <a href="./analizador.html" class="tool-button tool-button-active" aria-label="Ir al Analizador de Bonificaciones">
+                            Usar herramienta
+                        </a>
+                    </article>
+
+                    <article class="tool-card">
+                        <h3 class="tool-title">Cuadro de Amortización</h3>
+                        <p class="tool-description">
+                            Genera tu cuadro de amortización y simula cómo cambios del Euríbor o amortizaciones parciales afectarían la cuota y el coste total.
+                        </p>
+                        <button class="tool-button" aria-label="Cuadro de Amortización - Próximamente" disabled>
+                            Próximamente
+                        </button>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <!-- Disclaimer Section -->
+        <section class="disclaimer">
+            <div class="container">
+                <div class="disclaimer-content">
+                    <p class="disclaimer-text">
+                        <strong>Aviso:</strong> Esta herramienta es orientativa y no sustituye el asesoramiento financiero profesional.
+                    </p>
+                    <p class="privacy-text">
+                        <strong>Privacidad:</strong> No se recopilan datos personales. Las herramientas guardarán tus preferencias localmente en tu navegador.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p class="attribution">
+                    Hecha con 
+                    <span class="text-red-500">❤️</span> 
+                    por 
+                    <a href="https://github.com/Nicte" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="attribution-link"
+                       aria-label="Visitar el perfil de Nicte en GitHub (se abre en nueva ventana)">
+                        Nicte
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="./js/main.js" defer></script>
+</body>
+</html> 
