@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; connect-src 'self'; font-src 'self' https://fonts.gstatic.com;">
+    
+    <title>Comparador de Hipotecas - ComparaHipotecas</title>
+    <meta name="description" content="Compara múltiples ofertas de hipotecas lado a lado: TIN, plazo, comisiones y coste total.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://username.github.io/ComparaHipotecas/comparador_hipotecas.html">
+    <meta property="og:title" content="Comparador de Hipotecas - ComparaHipotecas">
+    <meta property="og:description" content="Compara múltiples ofertas de hipotecas lado a lado: TIN, plazo, comisiones y coste total.">
+    
+    <!-- Favicon and PWA -->
+    <link rel="icon" type="image/svg+xml" href="./img/favicon.svg">
+    <link rel="manifest" href="./site.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .kpi { 
+            display: grid; 
+            grid-template-columns: repeat(3, minmax(0, 1fr)); 
+            gap: 12px; 
+            margin-top: 16px;
+        }
+        .kpi .item { 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            padding: 16px 12px; 
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .kpi .item .label { 
+            font-size: 11px; 
+            color: #64748b; 
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .kpi .item .value { 
+            font-size: clamp(14px, 2.5vw, 18px); 
+            font-weight: 700; 
+            color: #1e293b;
+            line-height: 1.2;
+        }
+        .result { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-top: 12px; 
+            padding-top: 12px; 
+            border-top: 1px dashed #e2e8f0;
+        }
+        .result .badge { 
+            padding: 8px 12px; 
+            border-radius: 999px; 
+            font-weight: 600; 
+            font-size: 12px;
+            min-width: 80px;
+            text-align: center;
+        }
+        .good { 
+            background: rgba(34, 197, 94, 0.1); 
+            color: #166534; 
+            border: 1px solid rgba(34, 197, 94, 0.3); 
+        }
+        .bad { 
+            background: rgba(239, 68, 68, 0.1); 
+            color: #991b1b; 
+            border: 1px solid rgba(239, 68, 68, 0.3); 
+        }
+        .kpi.good .item { 
+            background: rgba(34, 197, 94, 0.05); 
+            border-color: rgba(34, 197, 94, 0.2);
+            box-shadow: 0 1px 3px rgba(34, 197, 94, 0.1);
+        }
+        .kpi.bad .item { 
+            background: rgba(239, 68, 68, 0.05); 
+            border-color: rgba(239, 68, 68, 0.2);
+            box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1);
+        }
+        .title-row { 
+            display: flex; 
+            align-items: flex-start; 
+            justify-content: space-between; 
+            gap: 16px; 
+            margin-bottom: 16px;
+        }
+        .small { font-size: 12px; }
+        .hidden { display: none; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { 
+            padding: 12px 8px; 
+            border-bottom: 1px solid #e2e8f0; 
+            text-align: right; 
+        }
+        th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { 
+            text-align: left; 
+        }
+        .mortgage-card { 
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 24px; 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            transition: all 0.2s;
+            height: fit-content;
+        }
+        .mortgage-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .sidebar-card {
+            background: white; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 20px; 
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group:last-child {
+            margin-bottom: 0;
+        }
+        .form-input {
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px; 
+            font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn-primary {
+            width: 100%; 
+            background: linear-gradient(to right, #3b82f6, #1d4ed8); 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(to right, #2563eb, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-secondary {
+            width: 100%; 
+            background: transparent; 
+            border: 1px solid #d1d5db; 
+            color: #374151; 
+            padding: 10px 16px; 
+            border-radius: 8px; 
+            font-weight: 500; 
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: inline-block;
+            text-align: center;
+        }
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        .btn-secondary.inline-block {
+            width: auto;
+            display: inline-block;
+        }
+        
+        /* Additional improvements */
+        .mortgage-card h2 {
+            color: #1f2937;
+            font-size: 1.25rem;
+            line-height: 1.3;
+        }
+        
+        .sidebar-card h3, .sidebar-card .text-xl {
+            color: #1f2937;
+            line-height: 1.3;
+        }
+        
+        .badge {
+            font-family: inherit;
+        }
+        
+        /* Better form styling */
+        label {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        /* Ensure consistent card heights */
+        #cards {
+            align-items: start;
+        }
+        
+        /* Responsive improvements */
+        @media (max-width: 1279px) {
+            .kpi {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .xl\\:w-80 {
+                width: 100%;
+            }
+        }
+        @media (max-width: 768px) {
+            .mortgage-card {
+                padding: 20px;
+            }
+            .kpi {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .kpi .item {
+                padding: 12px;
+            }
+            .title-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+            .title-row button {
+                align-self: flex-end;
+                width: auto;
+            }
+        }
+
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 font-sans">
+    <header class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">
+                        <a href="./index.html" class="hover:text-primary-600 transition-colors" aria-label="Volver a la página principal">
+                            ComparaHipotecas
+                        </a>
+                    </h1>
+                </div>
+                <nav aria-label="Navegación principal" class="flex items-center space-x-6">
+                    <a href="./index.html" class="text-gray-600 hover:text-primary-600 font-medium transition-colors text-sm">
+                        ← Volver al inicio
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <!-- Introduction Section -->
+        <section class="bg-gradient-to-br from-slate-50 to-blue-50 py-8 border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="flex items-center justify-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 11H5a2 2 0 0 0-2 2v3c0 1.1.9 2 2 2h2l3 3V8l-3 3zM18.5 12A4.5 4.5 0 0 0 16 7.97"></path>
+                                <path d="M21 12c0-2.5-1-4.5-3-6"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold text-gray-900">Comparador de Hipotecas</h1>
+                    </div>
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Introduce los datos básicos y compara múltiples ofertas de hipotecas. Calculamos automáticamente el importe del préstamo basado en el precio de la vivienda y el porcentaje financiado.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calculator Section -->
+        <section class="py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col xl:flex-row gap-8">
+                    <!-- Sidebar with fixed data -->
+                    <div class="xl:w-80 xl:flex-shrink-0">
+                        <div class="xl:sticky xl:top-24 space-y-6">
+                            <!-- Property Data -->
+                            <section class="sidebar-card">
+                                <div class="text-xl font-semibold text-gray-900 mb-3">Datos de la Vivienda</div>
+                                <div class="text-gray-600 text-sm mb-4">Estos datos se aplicarán a todas las hipotecas</div>
+                                <div class="space-y-4">
+                                    <div class="input-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Precio total (€)</label>
+                                        <input id="home_price" type="number" inputmode="decimal" step="100" value="350000" 
+                                               class="form-input">
+                                    </div>
+                                    <div class="input-group">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">% financiado (LTV)</label>
+                                        <input id="ltv_pct" type="number" inputmode="decimal" step="1" value="80" 
+                                               class="form-input">
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Actions -->
+                            <section class="sidebar-card">
+                                <div class="text-xl font-semibold text-gray-900 mb-4">Acciones</div>
+                                <div class="space-y-3">
+                                    <button class="btn-secondary" id="add">
+                                        + Añadir hipoteca
+                                    </button>
+                                    <button class="btn-secondary" id="reset">
+                                        🔄 Reiniciar todo
+                                    </button>
+                                    <button id="calc" class="btn-primary">
+                                        📊 Calcular
+                                    </button>
+                                </div>
+                                <div class="result">
+                                    <div class="text-gray-600 font-medium text-sm">Ganadora(s)</div>
+                                    <div id="winner" class="badge">—</div>
+                                </div>
+                            </section>
+
+                            <!-- Quick Info -->
+                            <section class="bg-gradient-to-br from-blue-50 to-primary-50 rounded-2xl p-6">
+                                <div class="text-lg font-semibold text-gray-900 mb-2">💡 Consejos</div>
+                                <div class="text-gray-700 text-sm space-y-2">
+                                    <p>• Compara el <strong>coste total</strong>, no solo la cuota</p>
+                                    <p>• Considera los gastos anuales vinculados</p>
+                                    <p>• Los datos se guardan automáticamente</p>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- Main content area -->
+                    <div class="flex-1 min-w-0">
+                        <div id="cards" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"></div>
+                    </div>
+                </div>
+
+                <section id="schedule_section" class="mortgage-card mb-8 hidden">
+                    <div class="title-row">
+                        <div>
+                            <div class="text-2xl font-semibold text-gray-900 mb-2">Cuadro de Amortización</div>
+                            <div class="text-gray-600 text-sm">Para la hipoteca ganadora. Sistema de amortización francés con cuotas constantes.</div>
+                        </div>
+                        <div class="flex gap-3">
+                            <button class="btn-secondary inline-block w-auto" id="download_csv">📊 Descargar CSV</button>
+                        </div>
+                    </div>
+                    <div id="schedule_tables" class="mt-6"></div>
+                </section>
+            </div>
+        </section>
+
+        <!-- Disclaimer -->
+        <section class="bg-amber-50 border-t border-amber-200 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <p class="text-amber-800 text-sm">
+                        <strong>Nota:</strong> Los cálculos utilizan el TIN (Tipo de Interés Nominal). No se calcula la TAE. Para tipos variables, use el índice actual + diferencial como TIN aproximado.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center space-y-2">
+                <p class="text-gray-600 text-sm">
+                    Hecha con 
+                    <span class="text-red-500">❤️</span> 
+                    por 
+                    <a href="https://github.com/Nicte" 
+                       target="_blank" 
+                       rel="noopener noreferrer" 
+                       class="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                       aria-label="Visitar el perfil de Nicte en GitHub (se abre en nueva ventana)">
+                        Nicte
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+const MAX_MORTGAGES = 5;
+let mortgages = []; // each {id, name, inputs...}
+let scheduleCache = []; // store last schedules for CSV
+
+function euros(x){ return Number.isFinite(x) ? x.toLocaleString(undefined,{style:'currency',currency:'EUR',maximumFractionDigits:2}) : '—'; }
+function pct(x){ return Number.isFinite(x) ? (x*100).toFixed(2)+'%' : '—'; }
+
+function computePayment(P, annualTinPct, years){
+  const n = Math.max(0, Math.round(years*12));
+  const i = Math.max(0, (annualTinPct/100)/12);
+  let payment;
+  if (i === 0) payment = n>0 ? P/n : 0;
+  else payment = P * (i) / (1 - Math.pow(1+i, -n));
+  return {n,i,payment};
+}
+
+function computeSchedule(P, annualTinPct, years){
+  const {n,i,payment} = computePayment(P, annualTinPct, years);
+  let balance = P;
+  const rows = [];
+  for(let k=1; k<=n; k++){
+    const interest = balance * i;
+    let principal = payment - interest;
+    // guard against final rounding
+    if (k === n){
+      principal = balance;
+    }
+    balance = Math.max(0, balance - principal);
+    rows.push({period:k, payment, interest, principal, balance});
+  }
+  const totalPaid = payment*n;
+  const totalInterest = Math.max(0, totalPaid - P);
+  return {rows, payment, totalInterest, totalPaid};
+}
+
+// Configuraciones realistas para diferentes hipotecas
+const mortgagePresets = [
+  {
+    name: "Banco Santander",
+    years: 30, tin: 3.25, openPct: 0, openFixed: 0, upfrontOther: 2800,
+    insHome: 0, insLife: 350, alarm: 0, others: 0
+  },
+  {
+    name: "BBVA",
+    years: 30, tin: 3.45, openPct: 1, openFixed: 0, upfrontOther: 3200,
+    insHome: 280, insLife: 420, alarm: 120, others: 200
+  },
+  {
+    name: "CaixaBank",
+    years: 25, tin: 3.15, openPct: 0.5, openFixed: 300, upfrontOther: 2500,
+    insHome: 250, insLife: 380, alarm: 0, others: 150
+  },
+  {
+    name: "Banco Sabadell",
+    years: 30, tin: 3.60, openPct: 0, openFixed: 600, upfrontOther: 3000,
+    insHome: 300, insLife: 450, alarm: 150, others: 0
+  },
+  {
+    name: "Unicaja",
+    years: 30, tin: 3.35, openPct: 0.8, openFixed: 0, upfrontOther: 2600,
+    insHome: 220, insLife: 380, alarm: 100, others: 180
+  }
+];
+
+function mortgageCardTemplate(id, name, presetIndex = 0){
+  const preset = mortgagePresets[presetIndex] || mortgagePresets[0];
+  
+  return `
+  <section class="mortgage-card" id="card_${id}">
+    <div class="title-row">
+      <h2 class="text-xl font-semibold text-gray-900 m-0">${name}</h2>
+      <button class="text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-1 rounded-lg transition-colors text-sm font-medium border border-red-200 hover:border-red-300" onclick="removeMortgage('${id}')">✕ Eliminar</button>
+    </div>
+    <div class="text-gray-600 text-sm mt-2 mb-4">Valores de ejemplo pre-rellenados. Modifica según tu oferta real.</div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Plazo (años)</label>
+        <input id="${id}_years" type="number" step="1" value="${preset.years}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">TIN (anual, %)</label>
+        <input id="${id}_tin" type="number" inputmode="decimal" step="0.01" value="${preset.tin}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Comisión apertura (% préstamo)</label>
+        <input id="${id}_open_pct" type="number" inputmode="decimal" step="0.01" value="${preset.openPct}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Comisión apertura (fija €)</label>
+        <input id="${id}_open_fixed" type="number" inputmode="decimal" step="1" value="${preset.openFixed}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Otros gastos iniciales (€)</label>
+        <input id="${id}_upfront_other" type="number" inputmode="decimal" step="1" value="${preset.upfrontOther}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Seguro hogar (€/año)</label>
+        <input id="${id}_ins_home" type="number" inputmode="decimal" step="1" value="${preset.insHome}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Seguro vida (€/año)</label>
+        <input id="${id}_ins_life" type="number" inputmode="decimal" step="1" value="${preset.insLife}" class="form-input">
+      </div>
+      <div class="input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Alarma (€/año)</label>
+        <input id="${id}_alarm" type="number" inputmode="decimal" step="1" value="${preset.alarm}" class="form-input">
+      </div>
+      <div class="md:col-span-2 input-group">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Otros gastos anuales (€/año)</label>
+        <input id="${id}_others" type="number" inputmode="decimal" step="1" value="${preset.others}" class="form-input">
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="item">
+        <div class="label">Préstamo banco</div>
+        <div id="${id}_loan" class="value">—</div>
+      </div>
+      <div class="item">
+        <div class="label">Tu aportación inicial</div>
+        <div id="${id}_upfront" class="value">—</div>
+      </div>
+      <div class="item">
+        <div class="label">Cuota mensual</div>
+        <div id="${id}_payment" class="value">—</div>
+      </div>
+      <div class="item">
+        <div class="label">Intereses totales</div>
+        <div id="${id}_interest" class="value">—</div>
+      </div>
+      <div class="item">
+        <div class="label">Coste total</div>
+        <div id="${id}_total" class="value">—</div>
+      </div>
+      <div class="item">
+        <div class="label">Incluye gastos anuales</div>
+        <div id="${id}_extras" class="value">—</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function addMortgage(){
+  if (mortgages.length >= MAX_MORTGAGES) return alert(`Límite de ${MAX_MORTGAGES} hipotecas alcanzado.`);
+  const id = `m${crypto.randomUUID().slice(0,8)}`;
+  const presetIndex = mortgages.length % mortgagePresets.length;
+  const preset = mortgagePresets[presetIndex];
+  const name = preset.name;
+  mortgages.push({id, name, presetIndex});
+  document.getElementById('cards').insertAdjacentHTML('beforeend', mortgageCardTemplate(id, name, presetIndex));
+  
+  // Auto-save after adding
+  saveToLocalStorage();
+}
+
+function removeMortgage(id){
+  mortgages = mortgages.filter(m => m.id !== id);
+  document.getElementById(`card_${id}`)?.remove();
+  saveToLocalStorage();
+}
+
+// LocalStorage functions
+function saveToLocalStorage() {
+  const data = {
+    homePrice: document.getElementById('home_price')?.value || '350000',
+    ltvPct: document.getElementById('ltv_pct')?.value || '80',
+    mortgages: mortgages.map(m => ({
+      ...m,
+      data: m.id ? getAllInputValuesForMortgage(m.id) : null
+    }))
+  };
+  localStorage.setItem('mortgageComparator', JSON.stringify(data));
+}
+
+function loadFromLocalStorage() {
+  try {
+    const saved = localStorage.getItem('mortgageComparator');
+    if (!saved) return false;
+    
+    const data = JSON.parse(saved);
+    
+    // Restore main inputs
+    if (data.homePrice) document.getElementById('home_price').value = data.homePrice;
+    if (data.ltvPct) document.getElementById('ltv_pct').value = data.ltvPct;
+    
+    // Restore mortgages
+    if (data.mortgages && data.mortgages.length > 0) {
+      // Clear existing mortgages first
+      document.getElementById('cards').innerHTML = "";
+      mortgages = [];
+      
+      data.mortgages.forEach(savedMortgage => {
+        const id = savedMortgage.id;
+        const name = savedMortgage.name;
+        const presetIndex = savedMortgage.presetIndex || 0;
+        
+        mortgages.push({id, name, presetIndex});
+        document.getElementById('cards').insertAdjacentHTML('beforeend', mortgageCardTemplate(id, name, presetIndex));
+        
+        // Restore input values if available
+        if (savedMortgage.data) {
+          Object.keys(savedMortgage.data).forEach(field => {
+            const input = document.getElementById(`${id}_${field}`);
+            if (input) input.value = savedMortgage.data[field];
+          });
+        }
+      });
+      return true;
+    }
+  } catch (e) {
+    console.warn('Error loading from localStorage:', e);
+  }
+  return false;
+}
+
+function getAllInputValuesForMortgage(id) {
+  const fields = ['years', 'tin', 'open_pct', 'open_fixed', 'upfront_other', 'ins_home', 'ins_life', 'alarm', 'others'];
+  const values = {};
+  fields.forEach(field => {
+    const input = document.getElementById(`${id}_${field}`);
+    if (input) values[field] = input.value;
+  });
+  return values;
+}
+
+function setupAutoSave() {
+  // Save on main inputs change
+  ['home_price', 'ltv_pct'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', saveToLocalStorage);
+      el.addEventListener('change', saveToLocalStorage);
+    }
+  });
+  
+  // For dynamically added mortgage inputs, we'll use event delegation
+  document.addEventListener('input', (e) => {
+    if (e.target.id && e.target.id.includes('_') && (
+      e.target.id.includes('_years') || e.target.id.includes('_tin') || 
+      e.target.id.includes('_open_') || e.target.id.includes('_upfront_') ||
+      e.target.id.includes('_ins_') || e.target.id.includes('_alarm') || 
+      e.target.id.includes('_others')
+    )) {
+      saveToLocalStorage();
+    }
+  });
+}
+
+function readShared(){
+  const home = parseFloat(document.getElementById('home_price').value) || 0;
+  const ltv = parseFloat(document.getElementById('ltv_pct').value) || 0;
+  const loanFromShared = home * (ltv/100);
+  const personalBase = Math.max(0, home - loanFromShared);
+  return {home, ltv, loanFromShared, personalBase};
+}
+
+function readCardValues(id){
+  const get = f => parseFloat(document.getElementById(`${id}_${f}`).value) || 0;
+  const years = get('years'), tin = get('tin');
+  const openPct = get('open_pct'), openFixed = get('open_fixed'), upfrontOther = get('upfront_other');
+  const annualExtras = get('ins_home') + get('ins_life') + get('alarm') + get('others');
+  return {years, tin, openPct, openFixed, upfrontOther, annualExtras};
+}
+
+function computeOne(shared, id){
+  const v = readCardValues(id);
+  const baseLoan = shared.loanFromShared;
+  const {n,i,payment} = computePayment(baseLoan, v.tin, v.years);
+  const totalPaid = payment*n;
+  const interest = Math.max(0, totalPaid - baseLoan);
+  const openingFee = baseLoan*(Math.max(0,v.openPct)/100) + Math.max(0,v.openFixed);
+  const upfront = shared.personalBase + openingFee + Math.max(0, v.upfrontOther);
+  const extras = Math.max(0, v.annualExtras) * v.years; // Annual costs over the life of the loan
+  const allIn = interest + openingFee + v.upfrontOther + extras;
+  return {id, years:v.years, tin:v.tin, loan:baseLoan, upfront, payment, interest, extras, allIn};
+}
+
+function writeCard(shared, r){
+  const id = r.id;
+  document.getElementById(`${id}_loan`).textContent = euros(r.loan);
+  document.getElementById(`${id}_upfront`).textContent = euros(r.upfront);
+  document.getElementById(`${id}_payment`).textContent = euros(r.payment);
+  document.getElementById(`${id}_interest`).textContent = euros(r.interest);
+  document.getElementById(`${id}_total`).textContent = euros(r.allIn + shared.home); // show relative to buying the house
+  document.getElementById(`${id}_extras`).textContent = euros(r.extras);
+}
+
+function decorateWinners(results){
+  const totals = results.map(r => r.allIn);
+  const min = Math.min(...totals);
+  const winners = results.filter(r => r.allIn === min);
+  // reset classes
+  results.forEach(r => {
+    const el = document.querySelector(`#card_${r.id} .kpi`);
+    el.classList.remove('good','bad');
+  });
+  // apply classes
+  results.forEach(r => {
+    const el = document.querySelector(`#card_${r.id} .kpi`);
+    if (r.allIn === min) el.classList.add('good'); else el.classList.add('bad');
+  });
+  // winner label
+  const names = winners.map(w => document.querySelector(`#card_${w.id} h2`).textContent);
+  const badge = document.getElementById('winner');
+  badge.textContent = names.join(' & ');
+  badge.className = "badge good";
+  return winners;
+}
+
+function renderScheduleTables(shared, winners){
+  const section = document.getElementById('schedule_section');
+  const container = document.getElementById('schedule_tables');
+  container.innerHTML = "";
+  scheduleCache = [];
+
+  section.classList.remove('hidden');
+
+  // Only show the first winner's schedule, even if there are ties
+  const w = winners[0];
+  const name = document.querySelector(`#card_${w.id} h2`).textContent;
+  const sch = computeSchedule(w.loan, w.tin, w.years);
+  scheduleCache.push({name, loan:w.loan, years:w.years, tin:w.tin, rows: sch.rows});
+
+  const tableId = `table_${w.id}`;
+  const header = `<div class="bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg p-4 mb-4">
+    <div class="text-lg font-semibold text-gray-900">${name}</div>
+    <div class="text-gray-600 text-sm mt-1">Préstamo ${euros(w.loan)} • TIN ${w.tin.toFixed(2)}% • Plazo ${w.years} años</div>
+    <div class="text-gray-600 text-sm">Cuota mensual: ${euros(sch.payment)} | Intereses totales: ${euros(sch.totalInterest)}</div>
+  </div>`;
+  
+  const table = document.createElement('table');
+  table.id = tableId;
+  table.className = 'w-full border-collapse bg-white rounded-lg overflow-hidden shadow-sm';
+  
+  const thead = document.createElement('thead');
+  thead.innerHTML = `<tr class="bg-gray-50">
+    <th class="px-4 py-3 text-left font-semibold text-gray-700">#</th>
+    <th class="px-4 py-3 text-right font-semibold text-gray-700">Cuota</th>
+    <th class="px-4 py-3 text-right font-semibold text-gray-700">Intereses</th>
+    <th class="px-4 py-3 text-right font-semibold text-gray-700">Capital</th>
+    <th class="px-4 py-3 text-right font-semibold text-gray-700">Pendiente</th>
+  </tr>`;
+  table.appendChild(thead);
+  
+  const tbody = document.createElement('tbody');
+  sch.rows.slice(0, 360).forEach((row, index) => {
+    const tr = document.createElement('tr');
+    tr.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+    tr.innerHTML = `<td class="px-4 py-2 border-b border-gray-200">${row.period}</td>
+      <td class="px-4 py-2 border-b border-gray-200 text-right">${euros(row.payment)}</td>
+      <td class="px-4 py-2 border-b border-gray-200 text-right">${euros(row.interest)}</td>
+      <td class="px-4 py-2 border-b border-gray-200 text-right">${euros(row.principal)}</td>
+      <td class="px-4 py-2 border-b border-gray-200 text-right">${euros(row.balance)}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  
+  container.insertAdjacentHTML('beforeend', header);
+  container.appendChild(table);
+}
+
+function toCSV(){
+  const lines = [];
+  scheduleCache.forEach(({name, loan, years, tin, rows}) => {
+    lines.push(`"${name}","Préstamo",${loan},"Años",${years},"TIN %",${tin}`);
+    lines.push("Periodo,Cuota,Intereses,Capital,Pendiente");
+    rows.forEach(r => {
+      lines.push([r.period, r.payment, r.interest, r.principal, r.balance].join(","));
+    });
+    lines.push(""); // separator
+  });
+  return lines.join("\n");
+}
+
+function downloadCSV(){
+  const csv = toCSV();
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'cuadro_amortizacion.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Wire up
+document.getElementById('add').addEventListener('click', addMortgage);
+document.getElementById('reset').addEventListener('click', () => {
+  if (confirm('¿Estás seguro de que quieres reiniciar todos los datos? Se perderán todos los cambios guardados.')) {
+    document.getElementById('cards').innerHTML = "";
+    mortgages = [];
+    
+    // Reset main inputs to defaults
+    document.getElementById('home_price').value = '350000';
+    document.getElementById('ltv_pct').value = '80';
+    
+    // Add default mortgages
+    addMortgage(); addMortgage();
+    
+    // Clear results
+    document.getElementById('schedule_section').classList.add('hidden');
+    document.getElementById('winner').textContent = '—';
+    
+    // Clear localStorage
+    localStorage.removeItem('mortgageComparator');
+  }
+});
+
+document.getElementById('calc').addEventListener('click', () => {
+  if (mortgages.length === 0) return alert("Añade al menos una hipoteca.");
+  const shared = readShared();
+  const results = mortgages.map(m => computeOne(shared, m.id));
+  results.forEach(r => writeCard(shared, r));
+  const winners = decorateWinners(results);
+  renderScheduleTables(shared, winners);
+});
+
+document.getElementById('download_csv').addEventListener('click', downloadCSV);
+
+// Initialize the application
+function initApp() {
+  setupAutoSave();
+  
+  // Try to load saved data, if not available create default mortgages
+  const loaded = loadFromLocalStorage();
+  if (!loaded) {
+    addMortgage(); // Banco Santander
+    addMortgage(); // BBVA
+  }
+}
+
+// Initialize when DOM is ready
+initApp();
+
+</script>
+</body>
+</html>
+

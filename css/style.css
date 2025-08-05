@@ -244,21 +244,21 @@ strong {
 
 /* Tools Section */
 .tools {
-  padding: var(--space-20) 0;
+  padding: var(--space-16) 0;
   background-color: var(--color-background);
 }
 
 .tools-title {
   text-align: center;
-  margin-bottom: var(--space-12);
+  margin-bottom: var(--space-10);
   color: var(--color-text);
 }
 
 .tools-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-8);
-  max-width: 1000px;
+  gap: var(--space-6);
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -278,7 +278,7 @@ strong {
   background-color: var(--color-background);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--space-8);
+  padding: var(--space-6);
   text-align: center;
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-sm);
@@ -286,6 +286,7 @@ strong {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 240px;
 }
 
 .tool-card:hover {
@@ -302,9 +303,10 @@ strong {
 
 .tool-description {
   color: var(--color-text-light);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-5);
   line-height: var(--line-height-relaxed);
   flex-grow: 1;
+  font-size: var(--font-size-sm);
 }
 
 .tool-button {
@@ -347,7 +349,7 @@ strong {
 /* Disclaimer Section */
 .disclaimer {
   background-color: var(--color-background-gray);
-  padding: var(--space-12) 0;
+  padding: var(--space-10) 0;
 }
 
 .disclaimer-content {
@@ -423,7 +425,7 @@ strong {
   }
   
   .tools {
-    padding: var(--space-16) 0;
+    padding: var(--space-12) 0;
   }
   
   .disclaimer {

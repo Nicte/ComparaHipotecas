@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; connect-src 'self'; font-src 'self' https://fonts.gstatic.com;">
+    
+    <title>Calculadora de Rentabilidad - ComparaHipotecas</title>
+    <meta name="description" content="Calcula la rentabilidad de un piso en alquiler con hipoteca. Incluye cashflow, ROE, DSCR y análisis fiscal orientativo.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://username.github.io/ComparaHipotecas/rentabilidad_alquiler.html">
+    <meta property="og:title" content="Calculadora de Rentabilidad - ComparaHipotecas">
+    <meta property="og:description" content="Calcula la rentabilidad de un piso en alquiler con hipoteca. Incluye cashflow, ROE, DSCR y análisis fiscal orientativo.">
+    
+    <!-- Favicon and PWA -->
+    <link rel="icon" type="image/svg+xml" href="./img/favicon.svg">
+    <link rel="manifest" href="./site.webmanifest">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .kpi-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .kpi-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .kpi-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-bottom: 8px;
+        }
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .kpi-description {
+            font-size: 11px;
+            color: #64748b;
+            line-height: 1.3;
+        }
+        .good .kpi-value { color: #059669; }
+        .bad .kpi-value { color: #dc2626; }
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        @media (max-width: 768px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+        @media (max-width: 640px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 font-sans">
+    <header class="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9,22 9,12 15,12 15,22"></polyline>
+                        </svg>
+                    </div>
+                    <h1 class="text-xl font-bold text-gray-900">
+                        <a href="./index.html" class="hover:text-primary-600 transition-colors" aria-label="Volver a la página principal">
+                            ComparaHipotecas
+                        </a>
+                    </h1>
+                </div>
+                <nav aria-label="Navegación principal" class="flex items-center space-x-6">
+                    <a href="./index.html" class="text-gray-600 hover:text-primary-600 font-medium transition-colors text-sm">
+                        ← Volver al inicio
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1">
+        <!-- Introduction Section -->
+        <section class="bg-gradient-to-br from-slate-50 to-blue-50 py-8 border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="flex items-center justify-center space-x-3 mb-6">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-blue-600 rounded-xl flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5m-4 0h4"></path>
+                            </svg>
+                        </div>
+                        <h1 class="text-3xl font-bold text-gray-900">Calculadora de Rentabilidad</h1>
+                    </div>
+                    <p class="text-lg text-gray-600 leading-relaxed">
+                        Calcula la rentabilidad de un piso en alquiler con hipoteca. Incluye cashflow, ROE, DSCR y análisis fiscal orientativo.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calculator Section -->
+        <section class="py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col xl:flex-row gap-8">
+                    <!-- Input Forms -->
+                    <div class="xl:flex-1">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- COMPRA -->
+                            <div class="bg-white rounded-2xl shadow-xl p-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-4">Compra</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="precio" class="block text-sm font-medium text-gray-700 mb-2">Precio de compra (€)</label>
+                                        <input type="number" id="precio" value="200000" min="0" step="1000" class="form-input">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="pctFin" class="block text-sm font-medium text-gray-700 mb-2">% financiación</label>
+                                            <input type="number" id="pctFin" value="80" min="0" max="100" step="1" class="form-input">
+                                        </div>
+                                        <div>
+                                            <label for="itp" class="block text-sm font-medium text-gray-700 mb-2">ITP / impuestos (%)</label>
+                                            <input type="number" id="itp" value="10" min="0" step="0.1" class="form-input">
+                                            <small class="text-xs text-gray-500">(edita según tu CCAA)</small>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="reforma" class="block text-sm font-medium text-gray-700 mb-2">Reforma (€)</label>
+                                            <input type="number" id="reforma" value="0" min="0" step="500" class="form-input">
+                                            <small class="text-xs text-gray-500">(opcional)</small>
+                                        </div>
+                                        <div>
+                                            <label for="muebles" class="block text-sm font-medium text-gray-700 mb-2">Muebles/eléctro. (€)</label>
+                                            <input type="number" id="muebles" value="0" min="0" step="200" class="form-input">
+                                            <small class="text-xs text-gray-500">(opcional)</small>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="agencia" class="block text-sm font-medium text-gray-700 mb-2">Agencia (€)</label>
+                                        <input type="number" id="agencia" value="0" min="0" step="100" class="form-input">
+                                        <small class="text-xs text-gray-500">(opcional)</small>
+                                    </div>
+                                    <details class="border-t border-gray-200 pt-4 mt-4">
+                                        <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-primary-600">Gastos de compra (avanzado)</summary>
+                                        <div class="mt-4 space-y-4">
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label for="notreg" class="block text-sm font-medium text-gray-700 mb-2">Notaría+Registro (€)</label>
+                                                    <input type="number" id="notreg" value="800" min="0" step="50" class="form-input">
+                                                </div>
+                                                <div>
+                                                    <label for="gestoria" class="block text-sm font-medium text-gray-700 mb-2">Gestoría (€)</label>
+                                                    <input type="number" id="gestoria" value="400" min="0" step="50" class="form-input">
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label for="tasacion" class="block text-sm font-medium text-gray-700 mb-2">Tasación (€)</label>
+                                                    <input type="number" id="tasacion" value="300" min="0" step="50" class="form-input">
+                                                </div>
+                                                <div>
+                                                    <label for="apertura" class="block text-sm font-medium text-gray-700 mb-2">Comisión apertura (€)</label>
+                                                    <input type="number" id="apertura" value="0" min="0" step="50" class="form-input">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+
+                            <!-- HIPOTECA -->
+                            <div class="bg-white rounded-2xl shadow-xl p-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-4">Hipoteca</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="tipo" class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                                        <select id="tipo" class="form-input">
+                                            <option value="fijo" selected>Fijo</option>
+                                            <option value="variable">Variable</option>
+                                        </select>
+                                    </div>
+                                    <div id="fijoBox">
+                                        <label for="intFijo" class="block text-sm font-medium text-gray-700 mb-2">Interés nominal anual (%)</label>
+                                        <input type="number" id="intFijo" value="3" min="0" step="0.05" class="form-input">
+                                    </div>
+                                    <div id="varBox" style="display:none">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label for="euribor" class="block text-sm font-medium text-gray-700 mb-2">Euríbor (%)</label>
+                                                <input type="number" id="euribor" value="2" min="-2" step="0.05" class="form-input">
+                                            </div>
+                                            <div>
+                                                <label for="dif" class="block text-sm font-medium text-gray-700 mb-2">Diferencial (%)</label>
+                                                <input type="number" id="dif" value="1" min="0" step="0.05" class="form-input">
+                                            </div>
+                                        </div>
+                                        <div class="text-xs text-gray-500 mt-2">Tipo equivalente usado en cuota: <span id="tipoEq" class="font-medium">3.00%</span></div>
+                                    </div>
+                                    <div>
+                                        <label for="plazo" class="block text-sm font-medium text-gray-700 mb-2">Plazo (años)</label>
+                                        <input type="number" id="plazo" value="30" min="1" step="1" class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ALQUILER & GASTOS -->
+                            <div class="bg-white rounded-2xl shadow-xl p-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-4">Alquiler & gastos</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="alquiler" class="block text-sm font-medium text-gray-700 mb-2">Alquiler mensual (€)</label>
+                                        <input type="number" id="alquiler" value="1000" min="0" step="50" class="form-input">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="vacios" class="block text-sm font-medium text-gray-700 mb-2">Meses vacíos/año</label>
+                                            <input type="number" id="vacios" value="1" min="0" max="12" step="1" class="form-input">
+                                        </div>
+                                        <div>
+                                            <label for="morosidad" class="block text-sm font-medium text-gray-700 mb-2">Morosidad (% renta)</label>
+                                            <input type="number" id="morosidad" value="0" min="0" max="100" step="0.5" class="form-input">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="comunidad" class="block text-sm font-medium text-gray-700 mb-2">Comunidad/año (€)</label>
+                                            <input type="number" id="comunidad" value="600" min="0" step="50" class="form-input">
+                                        </div>
+                                        <div>
+                                            <label for="ibi" class="block text-sm font-medium text-gray-700 mb-2">IBI/año (€)</label>
+                                            <input type="number" id="ibi" value="400" min="0" step="50" class="form-input">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="seguro" class="block text-sm font-medium text-gray-700 mb-2">Seguro hogar/año (€)</label>
+                                            <input type="number" id="seguro" value="200" min="0" step="25" class="form-input">
+                                        </div>
+                                        <div>
+                                            <label for="mantenimiento" class="block text-sm font-medium text-gray-700 mb-2">Mantenimiento (% renta)</label>
+                                            <input type="number" id="mantenimiento" value="5" min="0" max="100" step="0.5" class="form-input">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="gestion" class="block text-sm font-medium text-gray-700 mb-2">Gestión (% renta)</label>
+                                        <input type="number" id="gestion" value="0" min="0" max="100" step="0.5" class="form-input">
+                                    </div>
+                                    <details class="border-t border-gray-200 pt-4 mt-4">
+                                        <summary class="cursor-pointer text-sm font-medium text-gray-700 hover:text-primary-600">Otros gastos (avanzado)</summary>
+                                        <div class="mt-4">
+                                            <label for="otros" class="block text-sm font-medium text-gray-700 mb-2">Otros/año (€)</label>
+                                            <input type="number" id="otros" value="0" min="0" step="50" class="form-input">
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+
+                            <!-- FISCALIDAD -->
+                            <div class="bg-white rounded-2xl shadow-xl p-6">
+                                <h3 class="text-xl font-semibold text-gray-900 mb-4">Fiscalidad (opcional)</h3>
+                                <p class="text-sm text-gray-600 mb-4">Introduce tu tipo marginal IRPF (%) o una reducción aplicable (%). Esto es orientativo.</p>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="irpf" class="block text-sm font-medium text-gray-700 mb-2">Tipo marginal IRPF (%)</label>
+                                        <input type="number" id="irpf" value="0" min="0" max="60" step="1" class="form-input">
+                                    </div>
+                                    <div>
+                                        <label for="reduccion" class="block text-sm font-medium text-gray-700 mb-2">Reducción base imponible (%)</label>
+                                        <input type="number" id="reduccion" value="0" min="0" max="100" step="5" class="form-input">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="xl:w-96 xl:flex-shrink-0">
+                        <div class="xl:sticky xl:top-24 space-y-6">
+                            <div class="bg-white rounded-2xl shadow-xl p-6">
+                                <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">Resultados</h2>
+
+                                <!-- KPIs Grid -->
+                                <div class="kpi-grid">
+                                    <div class="kpi-card" id="brutaCard">
+                                        <div class="kpi-label">Rentabilidad bruta</div>
+                                        <div class="kpi-value" id="kpiBruta">—</div>
+                                        <div class="kpi-description">Ingresos anuales / Precio compra</div>
+                                    </div>
+                                    <div class="kpi-card" id="netaCard">
+                                        <div class="kpi-label">Rentabilidad neta</div>
+                                        <div class="kpi-value" id="kpiNeta">—</div>
+                                        <div class="kpi-description">(Ingresos − gastos no fin.) / Inversión total</div>
+                                    </div>
+                                    <div class="kpi-card" id="cfCard">
+                                        <div class="kpi-label">Cashflow mensual</div>
+                                        <div class="kpi-value" id="kpiCF">—</div>
+                                        <div class="kpi-description">Después de cuota hipotecaria</div>
+                                    </div>
+                                </div>
+
+                                <div class="kpi-grid">
+                                    <div class="kpi-card" id="roeCard">
+                                        <div class="kpi-label">ROE (capital propio)</div>
+                                        <div class="kpi-value" id="kpiROE">—</div>
+                                        <div class="kpi-description">((ingresos − gastos − deuda)/cap. propio)</div>
+                                    </div>
+                                    <div class="kpi-card" id="dscrCard">
+                                        <div class="kpi-label">DSCR</div>
+                                        <div class="kpi-value" id="kpiDSCR">—</div>
+                                        <div class="kpi-description">(ingresos − gastos) / deuda anual</div>
+                                    </div>
+                                    <div class="kpi-card">
+                                        <div class="kpi-label">Cuota mensual</div>
+                                        <div class="kpi-value" id="kpiCuota">—</div>
+                                        <div class="kpi-description">Anualidad estándar</div>
+                                    </div>
+                                </div>
+
+                                <!-- Detail Table -->
+                                <div class="mt-6">
+                                    <table class="w-full border-collapse text-sm">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="text-left py-2 px-2 font-medium text-gray-700">Concepto</th>
+                                                <th class="text-right py-2 px-2 font-medium text-gray-700">€ / %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="detalle"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-sm text-gray-600">
+                    <strong>Consejo:</strong> Confirma siempre impuestos y normativa de tu CCAA. Esta calculadora es orientativa y no constituye asesoramiento.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+function num(id){ return parseFloat(document.getElementById(id).value||0) }
+function fmtEur(x){ return x.toLocaleString('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:0}) }
+function fmtPct(x){ return (x*100).toFixed(2).replace('.',',') + '%' }
+function cuotaMensual(principal, tasaAnualPct, anos){
+  const r = (tasaAnualPct/100)/12, n = anos*12;
+  if (r<=0) return principal/n;
+  return principal * r / (1 - Math.pow(1+r, -n));
+}
+function calc(){
+  const precio = num('precio');
+  const pctFin = num('pctFin')/100;
+  const itpPct = num('itp')/100;
+  const reforma = num('reforma');
+  const muebles = num('muebles');
+  const agencia = num('agencia');
+  const notreg = num('notreg');
+  const gestoria = num('gestoria');
+  const tasacion = num('tasacion');
+  const apertura = num('apertura');
+
+  const tipo = document.getElementById('tipo').value;
+  const intFijo = num('intFijo');
+  const euribor = num('euribor');
+  const dif = num('dif');
+  const plazo = num('plazo');
+
+  const alquiler = num('alquiler');
+  const vacios = num('vacios');
+  const morosidad = num('morosidad')/100;
+  const comunidad = num('comunidad');
+  const ibi = num('ibi');
+  const seguro = num('seguro');
+  const mantenimientoPct = num('mantenimiento')/100;
+  const gestionPct = num('gestion')/100;
+  const otros = num('otros');
+
+  const irpf = num('irpf')/100;
+  const reduccion = num('reduccion')/100;
+
+  // Compra
+  const itp = precio * itpPct;
+  const gastosCompra = notreg + gestoria + tasacion + apertura;
+  const inversionTotal = precio + itp + gastosCompra + reforma + muebles + agencia;
+
+  // Hipoteca
+  const principal = precio * pctFin;
+  const tipoEq = (tipo==='fijo') ? intFijo : (euribor + dif);
+  document.getElementById('tipoEq').textContent = (tipoEq).toFixed(2) + '%';
+  const cuota = cuotaMensual(principal, tipoEq, plazo);
+  const deudaAnual = cuota * 12;
+
+  // Ingresos / Gastos
+  const ingresosAnuales = alquiler * Math.max(0, 12 - vacios) * (1 - morosidad);
+  const gastosVar = (alquiler*12) * (mantenimientoPct + gestionPct);
+  const gastosNoFin = comunidad + ibi + seguro + otros + gastosVar;
+
+  // Fiscalidad (opcional, simplificada sobre base neta)
+  const base = Math.max(0, ingresosAnuales - gastosNoFin);
+  const baseReducida = base * (1 - reduccion);
+  const irpfAnual = baseReducida * irpf;
+
+  // KPIs
+  const bruta = ingresosAnuales / Math.max(precio,1);
+  const neta = (ingresosAnuales - gastosNoFin) / Math.max(inversionTotal,1);
+
+  const cfAnualAntesDeuda = (ingresosAnuales - gastosNoFin - irpfAnual);
+  const cfAnualDespuesDeuda = cfAnualAntesDeuda - deudaAnual;
+  const cfMensual = cfAnualDespuesDeuda / 12;
+
+  const capitalPropio = Math.max(0, inversionTotal - principal);
+  const roe = capitalPropio>0 ? (cfAnualDespuesDeuda / capitalPropio) : 0;
+  const dscr = deudaAnual>0 ? ((ingresosAnuales - gastosNoFin)/deudaAnual) : Infinity;
+
+  // Pintar KPIs con colores dinámicos
+  document.getElementById('kpiBruta').textContent = fmtPct(bruta);
+  document.getElementById('kpiNeta').textContent = fmtPct(neta);
+  document.getElementById('kpiCF').textContent = fmtEur(cfMensual);
+  document.getElementById('kpiROE').textContent = fmtPct(roe);
+  document.getElementById('kpiDSCR').textContent = dscr===Infinity ? '—' : dscr.toFixed(2);
+  document.getElementById('kpiCuota').textContent = fmtEur(cuota);
+
+  // Añadir clases de color según los valores
+  const brutaCard = document.getElementById('brutaCard');
+  const netaCard = document.getElementById('netaCard');
+  const cfCard = document.getElementById('cfCard');
+  const roeCard = document.getElementById('roeCard');
+  const dscrCard = document.getElementById('dscrCard');
+
+  // Limpiar clases previas
+  [brutaCard, netaCard, cfCard, roeCard, dscrCard].forEach(card => {
+    card.classList.remove('good', 'bad');
+  });
+
+  // Aplicar colores según los valores
+  if (bruta >= 0.05) brutaCard.classList.add('good');
+  else if (bruta < 0.03) brutaCard.classList.add('bad');
+
+  if (neta >= 0.03) netaCard.classList.add('good');
+  else if (neta < 0.01) netaCard.classList.add('bad');
+
+  if (cfMensual >= 0) cfCard.classList.add('good');
+  else cfCard.classList.add('bad');
+
+  if (roe >= 0.08) roeCard.classList.add('good');
+  else if (roe < 0.03) roeCard.classList.add('bad');
+
+  if (dscr >= 1.3) dscrCard.classList.add('good');
+  else if (dscr < 1.1 && dscr !== Infinity) dscrCard.classList.add('bad');
+
+  // Detalle
+  const tb = document.getElementById('detalle');
+  tb.innerHTML = '';
+  const rows = [
+    ['Inversión total', fmtEur(inversionTotal)],
+    ['Hipoteca (principal)', fmtEur(principal)],
+    ['Capital propio', fmtEur(capitalPropio)],
+    ['Ingresos anuales efectivos', fmtEur(ingresosAnuales)],
+    ['Gastos no financieros (anual)', fmtEur(gastosNoFin)],
+    ['IRPF estimado (anual)', fmtEur(irpfAnual)],
+    ['Cuota hipoteca (mensual)', fmtEur(cuota)],
+    ['Deuda anual (cuotas)', fmtEur(deudaAnual)],
+    ['Cashflow anual después de deuda', fmtEur(cfAnualDespuesDeuda)],
+  ];
+  for (const r of rows){
+    const tr = document.createElement('tr');
+    tr.className = 'border-b border-gray-100';
+    const c1 = document.createElement('td'); 
+    c1.textContent = r[0];
+    c1.className = 'py-2 px-2 text-gray-600';
+    const c2 = document.createElement('td'); 
+    c2.textContent = r[1];
+    c2.className = 'py-2 px-2 text-right font-medium';
+    tr.appendChild(c1); tr.appendChild(c2); tb.appendChild(tr);
+  }
+}
+for (const el of document.querySelectorAll('input,select')) el.addEventListener('input', calc);
+document.getElementById('tipo').addEventListener('change', (e)=>{
+  const v = e.target.value;
+  document.getElementById('fijoBox').style.display = (v==='fijo')?'block':'none';
+  document.getElementById('varBox').style.display = (v==='variable')?'block':'none';
+  calc();
+});
+calc();
+</script>
+</body>
+</html>
